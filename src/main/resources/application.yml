@@ -1,0 +1,25 @@
+server:
+  port: 8700
+uri:
+  api:
+    clientes: http://localhost:8080
+    employee: http://localhost:8081
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter:
+              replenishRate: 10
+              burstCapacity: 20
+              requestTokens: 1
+      routes:
+        - id: clientes_by_id
+          uri: http://localhost:8080
+          predicates:
+            - Path=/promerica/v1/api/cliente-por-id/{id}
+          filters:
+            - RewritePath=/promerica/v1/api/cliente-por-id/, /v1/api/cliente/
+            - AddRequestHeader=X-GATEWAY-REQUEST-HEADER, GATEWAY_REQUEST
+            - AddResponseHeader=X-GATEWAY-RESPONSE-HEADER, GATEWAY_RESPONSE
